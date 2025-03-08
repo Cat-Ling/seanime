@@ -15,6 +15,7 @@ chmod +x seanime
 mkdir -p /data
 
 # Download config.toml
+rm /data/config.toml
 curl -sSL -o /data/config.toml https://github.com/Cat-Ling/seanime/raw/refs/heads/main/config.toml
 
 # Update version field in config.toml
