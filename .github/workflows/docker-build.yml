@@ -1,4 +1,4 @@
-name: Build and Publish Seanime Docker Image
+name: docker-build
 
 on:
   workflow_dispatch: # Manual trigger only
