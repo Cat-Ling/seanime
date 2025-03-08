@@ -1,6 +1,6 @@
 services:
   seanime:
-    image: ghcr.io/cat-ling/seanime:latest
+    image: ghcr.io/cat-ling/seanime:2.7.5
     container_name: seanime
     restart: unless-stopped
     volumes:
