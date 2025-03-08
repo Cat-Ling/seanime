@@ -16,7 +16,7 @@ RUN curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-re
     mkdir -p /ffmpeg && \
     tar -xf ffmpeg.tar.xz --strip-components=1 -C /ffmpeg && \
     mv /ffmpeg/ffmpeg /usr/local/bin/ffmpeg && \
-    mv /ffmpeg/ffpropbe /usr/local/bin/ffprobe && \
+    mv /ffmpeg/ffprobe /usr/local/bin/ffprobe && \
     chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe && \
     rm -rf ffmpeg.tar.xz /ffmpeg
 
