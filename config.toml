@@ -1,24 +1,30 @@
-#!/bin/sh
-set -e
+version = 'ver'
 
-apk add --no-cache curl tar
+[cache]
+dir = '$SEANIME_DATA_DIR/cache'
+transcodedir = '$SEANIME_DATA_DIR/cache/transcode'
 
-# Fetch the latest version
-VERSION=$(curl -sSL https://github.com/5rahim/seanime/releases/latest/download/latest.json | grep -oE '"version": "[^"]*' | cut -d'"' -f4)
+[database]
+name = 'seanime'
 
-# Download and extract seanime
-curl -sSLO https://github.com/5rahim/seanime/releases/latest/download/seanime-${VERSION}_Linux_x86_64.tar.gz
-tar -xzf seanime-${VERSION}_Linux_x86_64.tar.gz
-chmod +x seanime
+[extensions]
+dir = '$SEANIME_DATA_DIR/extensions'
 
-# Prepare data directory
-mkdir -p /data
+[logs]
+dir = '$SEANIME_DATA_DIR/logs'
 
-# Download config.toml
-curl -sSL -o /data/config.toml https://github.com/Cat-Ling/seanime/raw/refs/heads/main/config.toml
+[manga]
+downloaddir = '$SEANIME_DATA_DIR/manga'
 
-# Update version field in config.toml
-sed -i "s/^version = '.*'/version = '${VERSION}'/" /data/config.toml
+[offline]
+assetdir = '$SEANIME_DATA_DIR/offline/assets'
+dir = '$SEANIME_DATA_DIR/offline'
 
-# Run seanime
-./seanime -datadir /data
+[server]
+host = '0.0.0.0'
+offline = false
+port = 43211
+usebinarypath = true
+
+[web]
+assetdir = '$SEANIME_DATA_DIR/assets'
