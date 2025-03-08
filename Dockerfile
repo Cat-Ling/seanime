@@ -11,12 +11,13 @@ RUN VERSION=$(curl -sSL https://github.com/5rahim/seanime/releases/latest/downlo
     chmod +x /app/seanime && \
     rm seanime-${VERSION}_Linux_x86_64.tar.gz
 
-# Download and extract static FFmpeg
+# Download and extract static FFmpeg (includes ffprobe)
 RUN curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
     mkdir -p /ffmpeg && \
     tar -xf ffmpeg.tar.xz --strip-components=1 -C /ffmpeg && \
     mv /ffmpeg/ffmpeg /usr/local/bin/ffmpeg && \
-    chmod +x /usr/local/bin/ffmpeg && \
+    mv /ffmpeg/ffpropbe /usr/local/bin/ffprobe && \
+    chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe && \
     rm -rf ffmpeg.tar.xz /ffmpeg
 
 # Final minimal runtime image
@@ -25,6 +26,7 @@ WORKDIR /app
 
 COPY --from=builder /app/seanime /app/seanime
 COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
+COPY --from=builder /usr/local/bin/ffprobe /usr/local/bin/ffprobe
 
 EXPOSE 43211
 
