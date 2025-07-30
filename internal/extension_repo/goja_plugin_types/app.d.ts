@@ -1,6 +1,43 @@
 declare namespace $app {
 
     /**
+     * @package anilist
+     */
+
+    /**
+     * @event ListMissedSequelsRequestedEvent
+     * @file internal/api/anilist/hook_events.go
+     * @description
+     * ListMissedSequelsRequestedEvent is triggered when the list missed sequels request is requested.
+     * Prevent default to skip the default behavior and return your own data.
+     */
+    function onListMissedSequelsRequested(cb: (event: ListMissedSequelsRequestedEvent) => void): void;
+
+    interface ListMissedSequelsRequestedEvent {
+        next(): void;
+
+        preventDefault(): void;
+
+        animeCollectionWithRelations?: AL_AnimeCollectionWithRelations;
+        variables?: Record<string, any>;
+        query: string;
+        list?: Array<AL_BaseAnime>;
+    }
+
+    /**
+     * @event ListMissedSequelsEvent
+     * @file internal/api/anilist/hook_events.go
+     */
+    function onListMissedSequels(cb: (event: ListMissedSequelsEvent) => void): void;
+
+    interface ListMissedSequelsEvent {
+        next(): void;
+
+        list?: Array<AL_BaseAnime>;
+    }
+
+
+    /**
      * @package anilist_platform
      */
 
@@ -258,6 +295,44 @@ declare namespace $app {
 
 
     /**
+     * @package animap
+     */
+
+    /**
+     * @event AnimapMediaRequestedEvent
+     * @file internal/api/animap/hook_events.go
+     * @description
+     * AnimapMediaRequestedEvent is triggered when the Animap media is requested.
+     * Prevent default to skip the default behavior and return your own data.
+     */
+    function onAnimapMediaRequested(cb: (event: AnimapMediaRequestedEvent) => void): void;
+
+    interface AnimapMediaRequestedEvent {
+        from: string;
+        id: number;
+        media?: Animap_Anime;
+
+        next(): void;
+
+        preventDefault(): void;
+    }
+
+    /**
+     * @event AnimapMediaEvent
+     * @file internal/api/animap/hook_events.go
+     * @description
+     * AnimapMediaEvent is triggered after processing AnimapMedia.
+     */
+    function onAnimapMedia(cb: (event: AnimapMediaEvent) => void): void;
+
+    interface AnimapMediaEvent {
+        media?: Animap_Anime;
+
+        next(): void;
+    }
+
+
+    /**
      * @package anime
      */
 
@@ -425,7 +500,7 @@ declare namespace $app {
      * @event AnimeLibraryCollectionEvent
      * @file internal/library/anime/hook_events.go
      * @description
-     * AnimeLibraryCollectionRequestedEvent is triggered when the user requests the library collection.
+     * AnimeLibraryCollectionEvent is triggered when the user requests the library collection.
      */
     function onAnimeLibraryCollection(cb: (event: AnimeLibraryCollectionEvent) => void): void;
 
@@ -463,6 +538,111 @@ declare namespace $app {
         next(): void;
 
         streamCollection?: Anime_StreamCollection;
+    }
+
+    /**
+     * @event AnimeEntryDownloadInfoRequestedEvent
+     * @file internal/library/anime/hook_events.go
+     * @description
+     * AnimeEntryDownloadInfoRequestedEvent is triggered when the app requests the download info for a media entry.
+     * This is triggered before [AnimeEntryDownloadInfoEvent].
+     */
+    function onAnimeEntryDownloadInfoRequested(cb: (event: AnimeEntryDownloadInfoRequestedEvent) => void): void;
+
+    interface AnimeEntryDownloadInfoRequestedEvent {
+        next(): void;
+
+        localFiles?: Array<Anime_LocalFile>;
+        AnimeMetadata?: Metadata_AnimeMetadata;
+        Media?: AL_BaseAnime;
+        Progress?: number;
+        Status?: AL_MediaListStatus;
+        entryDownloadInfo?: Anime_EntryDownloadInfo;
+    }
+
+    /**
+     * @event AnimeEntryDownloadInfoEvent
+     * @file internal/library/anime/hook_events.go
+     * @description
+     * AnimeEntryDownloadInfoEvent is triggered when the download info is being returned.
+     */
+    function onAnimeEntryDownloadInfo(cb: (event: AnimeEntryDownloadInfoEvent) => void): void;
+
+    interface AnimeEntryDownloadInfoEvent {
+        next(): void;
+
+        entryDownloadInfo?: Anime_EntryDownloadInfo;
+    }
+
+    /**
+     * @event AnimeEpisodeCollectionRequestedEvent
+     * @file internal/library/anime/hook_events.go
+     * @description
+     * AnimeEpisodeCollectionRequestedEvent is triggered when the episode collection is being requested.
+     * Prevent default to skip the default behavior and return your own data.
+     */
+    function onAnimeEpisodeCollectionRequested(cb: (event: AnimeEpisodeCollectionRequestedEvent) => void): void;
+
+    interface AnimeEpisodeCollectionRequestedEvent {
+        next(): void;
+
+        preventDefault(): void;
+
+        media?: AL_BaseAnime;
+        metadata?: Metadata_AnimeMetadata;
+        episodeCollection?: Anime_EpisodeCollection;
+    }
+
+    /**
+     * @event AnimeEpisodeCollectionEvent
+     * @file internal/library/anime/hook_events.go
+     * @description
+     * AnimeEpisodeCollectionEvent is triggered when the episode collection is being returned.
+     */
+    function onAnimeEpisodeCollection(cb: (event: AnimeEpisodeCollectionEvent) => void): void;
+
+    interface AnimeEpisodeCollectionEvent {
+        next(): void;
+
+        episodeCollection?: Anime_EpisodeCollection;
+    }
+
+
+    /**
+     * @package anizip
+     */
+
+    /**
+     * @event AnizipMediaRequestedEvent
+     * @file internal/api/anizip/hook_events.go
+     * @description
+     * AnizipMediaRequestedEvent is triggered when the AniZip media is requested.
+     * Prevent default to skip the default behavior and return your own data.
+     */
+    function onAnizipMediaRequested(cb: (event: AnizipMediaRequestedEvent) => void): void;
+
+    interface AnizipMediaRequestedEvent {
+        next(): void;
+
+        preventDefault(): void;
+
+        from: string;
+        id: number;
+        media?: Anizip_Media;
+    }
+
+    /**
+     * @event AnizipMediaEvent
+     * @file internal/api/anizip/hook_events.go
+     * @description
+     * AnizipMediaEvent is triggered after processing AnizipMedia.
+     */
+    function onAnizipMedia(cb: (event: AnizipMediaEvent) => void): void;
+
+    interface AnizipMediaEvent {
+        next(): void;
+
+        media?: Anizip_Media;
     }
 
 
@@ -742,6 +922,7 @@ declare namespace $app {
         preventDefault(): void;
 
         animeActivity?: DiscordRPC_AnimeActivity;
+        name: string;
         details: string;
         state: string;
         startTimestamp?: number;
@@ -772,6 +953,7 @@ declare namespace $app {
         preventDefault(): void;
 
         mangaActivity?: DiscordRPC_MangaActivity;
+        name: string;
         details: string;
         state: string;
         startTimestamp?: number;
@@ -2538,6 +2720,100 @@ declare namespace $app {
     }
 
     /**
+     * - Filepath: internal/api/animap/animap.go
+     */
+    interface Animap_Anime {
+        title: string;
+        titles?: Record<string, string>;
+        /**
+         * YYYY-MM-DD
+         */
+        startDate?: string;
+        /**
+         * YYYY-MM-DD
+         */
+        endDate?: string;
+        /**
+         * Finished, Airing, Upcoming, etc.
+         */
+        status: string;
+        /**
+         * TV, OVA, Movie, etc.
+         */
+        type: string;
+        /**
+         * Indexed by AniDB episode number, "1", "S1", etc.
+         */
+        episodes?: Record<string, Animap_Episode>;
+        mappings?: Animap_AnimeMapping;
+    }
+
+    /**
+     * - Filepath: internal/api/animap/animap.go
+     */
+    interface Animap_AnimeMapping {
+        anidb_id?: number;
+        anilist_id?: number;
+        kitsu_id?: number;
+        thetvdb_id?: number;
+        /**
+         * Can be int or string, forced to string
+         */
+        themoviedb_id?: string;
+        mal_id?: number;
+        livechart_id?: number;
+        /**
+         * Can be int or string, forced to string
+         */
+        anime
+        -
+        planet_id?: string;
+        anisearch_id?: number;
+        simkl_id?: number;
+        notify
+        .
+        moe_id?: string;
+        animecountdown_id?: number;
+        type?: string;
+    }
+
+    /**
+     * - Filepath: internal/api/animap/animap.go
+     */
+    interface Animap_Episode {
+        anidbEpisode: string;
+        anidbEid: number;
+        tvdbEid?: number;
+        tvdbShowId?: number;
+        /**
+         * YYYY-MM-DD
+         */
+        airDate?: string;
+        /**
+         * Title of the episode from AniDB
+         */
+        anidbTitle?: string;
+        /**
+         * Title of the episode from TVDB
+         */
+        tvdbTitle?: string;
+        overview?: string;
+        image?: string;
+        /**
+         * minutes
+         */
+        runtime?: number;
+        /**
+         * Xm
+         */
+        length?: string;
+        seasonNumber?: number;
+        seasonName?: string;
+        number: number;
+        absoluteNumber?: number;
+    }
+
+    /**
      * - Filepath: internal/library/anime/autodownloader_rule.go
      */
     interface Anime_AutoDownloaderRule {
@@ -2581,6 +2857,8 @@ declare namespace $app {
         localFiles?: Array<Anime_LocalFile>;
         anidbId: number;
         currentEpisodeCount: number;
+        _isNakamaEntry: boolean;
+        nakamaLibraryData?: Anime_NakamaEntryLibraryData;
     }
 
     /**
@@ -2671,6 +2949,16 @@ declare namespace $app {
          */
         metadataIssue?: string;
         baseAnime?: AL_BaseAnime;
+        _isNakamaEpisode: boolean;
+    }
+
+    /**
+     * - Filepath: internal/library/anime/episode_collection.go
+     */
+    interface Anime_EpisodeCollection {
+        hasMappingError: boolean;
+        episodes?: Array<Anime_Episode>;
+        metadata?: Metadata_AnimeMetadata;
     }
 
     /**
@@ -2684,6 +2972,10 @@ declare namespace $app {
         summary?: string;
         overview?: string;
         isFiller?: boolean;
+        /**
+         * Indicates if the episode has a real image
+         */
+        hasImage?: boolean;
     }
 
     /**
@@ -2713,6 +3005,10 @@ declare namespace $app {
          * Library data
          */
         libraryData?: Anime_EntryLibraryData;
+        /**
+         * Library data from Nakama
+         */
+        nakamaLibraryData?: Anime_NakamaEntryLibraryData;
         /**
          * AniList list data
          */
@@ -2805,6 +3101,14 @@ declare namespace $app {
     }
 
     /**
+     * - Filepath: internal/library/anime/entry_library_data.go
+     */
+    interface Anime_NakamaEntryLibraryData {
+        unwatchedCount: number;
+        mainFileCount: number;
+    }
+
+    /**
      * - Filepath: internal/library/anime/normalized_media.go
      */
     interface Anime_NormalizedMedia {
@@ -2857,6 +3161,55 @@ declare namespace $app {
         dir: string;
         localFiles?: Array<Anime_LocalFile>;
         suggestions?: Array<AL_BaseAnime>;
+    }
+
+    /**
+     * - Filepath: internal/api/anizip/anizip.go
+     */
+    interface Anizip_Episode {
+        tvdbEid?: number;
+        airdate?: string;
+        seasonNumber?: number;
+        episodeNumber?: number;
+        absoluteEpisodeNumber?: number;
+        title?: Record<string, string>;
+        image?: string;
+        summary?: string;
+        overview?: string;
+        runtime?: number;
+        length?: number;
+        episode?: string;
+        anidbEid?: number;
+        rating?: string;
+    }
+
+    /**
+     * - Filepath: internal/api/anizip/anizip.go
+     */
+    interface Anizip_Mappings {
+        animeplanet_id?: string;
+        kitsu_id?: number;
+        mal_id?: number;
+        type?: string;
+        anilist_id?: number;
+        anisearch_id?: number;
+        anidb_id?: number;
+        notifymoe_id?: string;
+        livechart_id?: number;
+        thetvdb_id?: number;
+        imdb_id?: string;
+        themoviedb_id?: string;
+    }
+
+    /**
+     * - Filepath: internal/api/anizip/anizip.go
+     */
+    interface Anizip_Media {
+        titles?: Record<string, string>;
+        episodes?: Record<string, Anizip_Episode>;
+        episodeCount: number;
+        specialCount: number;
+        mappings?: Anizip_Mappings;
     }
 
     /**
@@ -2992,6 +3345,7 @@ declare namespace $app {
         language?: string;
         rating?: number;
         updatedAt?: string;
+        localIsPDF?: boolean;
     }
 
     /**
@@ -3150,6 +3504,10 @@ declare namespace $app {
         seasonNumber: number;
         absoluteEpisodeNumber: number;
         anidbEid: number;
+        /**
+         * Indicates if the episode has a real image
+         */
+        hasImage: boolean;
     }
 
     /**

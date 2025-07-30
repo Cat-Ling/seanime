@@ -2,7 +2,7 @@ import { useAnilistListMissedSequels } from "@/api/hooks/anilist.hooks"
 import { MediaEntryCard } from "@/app/(main)/_features/media/_components/media-entry-card"
 import { MediaEntryCardSkeleton } from "@/app/(main)/_features/media/_components/media-entry-card-skeleton"
 import { Carousel, CarouselContent, CarouselDotButtons } from "@/components/ui/carousel"
-import { useInView } from "framer-motion"
+import { useInView } from "motion/react"
 import React from "react"
 
 
@@ -17,7 +17,7 @@ export function DiscoverMissedSequelsSection() {
 
     return (
         <div className="space-y-2 z-[5] relative" data-discover-missed-sequels-container>
-            <h2>You might have missed</h2>
+            <h2>You Might Have Missed</h2>
             <Carousel
                 className="w-full max-w-full"
                 gap="xl"

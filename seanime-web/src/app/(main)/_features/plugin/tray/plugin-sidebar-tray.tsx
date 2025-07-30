@@ -5,6 +5,7 @@ import {
     useReloadExternalExtension,
     useSetPluginSettingsPinnedTrays,
 } from "@/api/hooks/extensions.hooks"
+import { WebSocketContext } from "@/app/(main)/_atoms/websocket.atoms"
 import { PluginTray, TrayIcon } from "@/app/(main)/_features/plugin/tray/plugin-tray"
 import { useWebsocketMessageListener } from "@/app/(main)/_hooks/handle-websockets"
 import { IconButton } from "@/components/ui/button"
@@ -20,7 +21,12 @@ import { usePathname } from "next/navigation"
 import React from "react"
 import { LuBlocks, LuBug, LuCircleDashed, LuRefreshCw, LuShapes } from "react-icons/lu"
 import { TbPinned, TbPinnedFilled } from "react-icons/tb"
-import { usePluginListenTrayIconEvent, usePluginSendListTrayIconsEvent } from "../generated/plugin-events"
+import {
+    usePluginListenTrayCloseEvent,
+    usePluginListenTrayIconEvent,
+    usePluginListenTrayOpenEvent,
+    usePluginSendListTrayIconsEvent,
+} from "../generated/plugin-events"
 
 export const __plugin_trayIconsAtom = atom<TrayIcon[]>([])
 
@@ -57,6 +63,22 @@ const ExtensionList = ({
     const [trayIconListOpen, setTrayIconListOpen] = React.useState(false)
 
     const pinnedTrayIcons = trayIcons.filter(trayIcon => isPinned(trayIcon.extensionId) || trayIcon.extensionId === unpinnedTrayIconClicked?.extensionId)
+
+    usePluginListenTrayOpenEvent((data) => {
+        if (!data.extensionId) return
+
+        if (!isPinned(data.extensionId)) {
+            setUnpinnedTrayIconClicked(trayIcons.find(t => t.extensionId === data.extensionId) || null)
+        }
+    }, "")
+
+    usePluginListenTrayCloseEvent((data) => {
+        if (!data.extensionId) return
+
+        if (!isPinned(data.extensionId)) {
+            setUnpinnedTrayIconClicked(null)
+        }
+    }, "")
 
     return (
         <>
@@ -197,7 +219,7 @@ const ExtensionList = ({
                     data-plugin-sidebar-debug-popover
                     modal={false}
                 >
-                    <div className="space-y-2" data-plugin-sidebar-debug-popover-content>
+                    <div className="space-y-1" data-plugin-sidebar-debug-popover-content>
                         <div className="text-sm space-y-1">
                             <p className="font-bold">
                                 Debug
@@ -227,12 +249,12 @@ const ExtensionList = ({
                 {pinnedTrayIcons.map((trayIcon, index) => (
                     <PluginTray
                         trayIcon={trayIcon}
-                            isPinned={isPinned(trayIcon.extensionId)}
-                            key={index}
-                            place={place}
-                            width={width}
-                        />
-                    ))}
+                        isPinned={isPinned(trayIcon.extensionId)}
+                        key={index}
+                        place={place}
+                        width={width}
+                    />
+                ))}
             </div>
         </>
     )
@@ -246,6 +268,11 @@ export function PluginSidebarTray({ place }: { place: "sidebar" | "top" }) {
     const pathname = usePathname()
 
     const { data: pluginSettings } = useGetPluginSettings()
+
+    const [mobileExtensionListOpen, setMobileExtensionListOpen] = React.useState(false)
+    const [pendingTrayOpenExtensionId, setPendingTrayOpenExtensionId] = React.useState<string | null>(null)
+
+    const socket = React.useContext(WebSocketContext)
 
     const firstRender = React.useRef(true)
     React.useEffect(() => {
@@ -287,6 +314,59 @@ export function PluginSidebarTray({ place }: { place: "sidebar" | "top" }) {
         })
     }, "")
 
+    /**
+     * Handling mobile programmatic tray open/close
+     */
+
+    usePluginListenTrayOpenEvent((data) => {
+        const isMobile = width && width < 1024
+        if (isMobile && place === "top") {
+            // Store which extension triggered the open event
+            setPendingTrayOpenExtensionId(data.extensionId || "")
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: "smooth" })
+            // Open the mobile extension list
+            setMobileExtensionListOpen(true)
+        }
+    }, "")
+
+    usePluginListenTrayCloseEvent((data) => {
+        const isMobile = width && width < 1024
+        if (isMobile && place === "top") {
+            setPendingTrayOpenExtensionId(null)
+            setTimeout(() => {
+                setMobileExtensionListOpen(false)
+            }, 300)
+        }
+    }, "")
+
+    // Re-send the tray open event after the extension list is opened and rendered.
+    // This is necessary because the first tray open event is ignored since the tray is not rendered yet.
+    React.useEffect(() => {
+        if (mobileExtensionListOpen && pendingTrayOpenExtensionId && socket) {
+            // Small delay to ensure the PluginTray components are rendered
+            const timeout = setTimeout(() => {
+                // Re-send the tray open event now that the extension list is open
+                const fakeEvent = new MessageEvent("message", {
+                    data: JSON.stringify({
+                        type: "plugin",
+                        payload: {
+                            type: "tray:open",
+                            extensionId: pendingTrayOpenExtensionId,
+                            payload: {
+                                extensionId: pendingTrayOpenExtensionId,
+                            },
+                        },
+                    }),
+                })
+                socket.dispatchEvent(fakeEvent)
+            }, 100)
+            return () => clearTimeout(timeout)
+        }
+    }, [mobileExtensionListOpen, pendingTrayOpenExtensionId, socket])
+
+    // End
+
     const { data: developmentModeExtensions, refetch } = useListDevelopmentModeExtensions()
     const { mutate: reloadExternalExtension, isPending: isReloadingExtension } = useReloadExternalExtension()
 
@@ -318,6 +398,8 @@ export function PluginSidebarTray({ place }: { place: "sidebar" | "top" }) {
             />}
             {isMobile && place === "top" && <div className="">
                 <Popover
+                    open={mobileExtensionListOpen}
+                    onOpenChange={setMobileExtensionListOpen}
                     side="bottom"
                     trigger={<div>
                         <IconButton

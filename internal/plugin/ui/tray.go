@@ -159,6 +159,7 @@ func (t *TrayManager) jsNewTray(call goja.FunctionCall) goja.Value {
 	_ = trayObj.Set("stack", t.componentManager.jsStack)
 	_ = trayObj.Set("text", t.componentManager.jsText)
 	_ = trayObj.Set("button", t.componentManager.jsButton)
+	_ = trayObj.Set("anchor", t.componentManager.jsAnchor)
 	_ = trayObj.Set("input", t.componentManager.jsInput)
 	_ = trayObj.Set("radioGroup", t.componentManager.jsRadioGroup)
 	_ = trayObj.Set("switch", t.componentManager.jsSwitch)
@@ -206,7 +207,9 @@ func (t *Tray) jsUpdate(call goja.FunctionCall) goja.Value {
 //	Example:
 //	tray.open()
 func (t *Tray) jsOpen(call goja.FunctionCall) goja.Value {
-	t.trayManager.ctx.SendEventToClient(ServerTrayOpenEvent, ServerTrayOpenEventPayload{})
+	t.trayManager.ctx.SendEventToClient(ServerTrayOpenEvent, ServerTrayOpenEventPayload{
+		ExtensionID: t.trayManager.ctx.ext.ID,
+	})
 	return goja.Undefined()
 }
 
@@ -215,7 +218,9 @@ func (t *Tray) jsOpen(call goja.FunctionCall) goja.Value {
 //	Example:
 //	tray.close()
 func (t *Tray) jsClose(call goja.FunctionCall) goja.Value {
-	t.trayManager.ctx.SendEventToClient(ServerTrayCloseEvent, ServerTrayCloseEventPayload{})
+	t.trayManager.ctx.SendEventToClient(ServerTrayCloseEvent, ServerTrayCloseEventPayload{
+		ExtensionID: t.trayManager.ctx.ext.ID,
+	})
 	return goja.Undefined()
 }
 

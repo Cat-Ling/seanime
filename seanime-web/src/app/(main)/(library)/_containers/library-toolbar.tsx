@@ -33,6 +33,8 @@ export type LibraryToolbarProps = {
     unknownGroups: Anime_UnknownGroup[]
     isLoading: boolean
     hasEntries: boolean
+    isStreamingOnly: boolean
+    isNakamaLibrary: boolean
 }
 
 export function LibraryToolbar(props: LibraryToolbarProps) {
@@ -43,6 +45,8 @@ export function LibraryToolbar(props: LibraryToolbarProps) {
         unmatchedLocalFiles,
         unknownGroups,
         hasEntries,
+        isStreamingOnly,
+        isNakamaLibrary,
     } = props
 
     const ts = useThemeSettings()
@@ -59,6 +63,8 @@ export function LibraryToolbar(props: LibraryToolbarProps) {
 
     const { mutate: openInExplorer } = useOpenInExplorer()
 
+    const hasLibraryPath = !!status?.settings?.library?.libraryPath
+
     return (
         <>
             {(ts.libraryScreenBannerType === ThemeLibraryScreenBannerType.Dynamic && hasEntries) && <div
@@ -70,12 +76,12 @@ export function LibraryToolbar(props: LibraryToolbarProps) {
             ></div>}
             <div className="flex flex-wrap w-full justify-end gap-2 p-4 relative z-[10]" data-library-toolbar-container>
                 <div className="flex flex-1" data-library-toolbar-spacer></div>
-                {(!!status?.settings?.library?.libraryPath && hasEntries) && (
+                {(hasEntries) && (
                     <>
                         <Tooltip
                             trigger={<IconButton
                                 data-library-toolbar-switch-view-button
-                                intent={libraryView === "base" ? "white-subtle" : "primary"}
+                                intent={libraryView === "base" ? "white-subtle" : "white"}
                                 icon={<IoLibrary className="text-2xl" />}
                                 onClick={() => setLibraryView(p => p === "detailed" ? "base" : "detailed")}
                             />}
@@ -83,18 +89,18 @@ export function LibraryToolbar(props: LibraryToolbarProps) {
                             Switch view
                         </Tooltip>
 
-                        <Tooltip
+                        {!(isStreamingOnly || isNakamaLibrary) && <Tooltip
                             trigger={<IconButton
                                 data-library-toolbar-playlists-button
                                 intent={"white-subtle"}
                                 icon={<MdOutlineVideoLibrary className="text-2xl" />}
                                 onClick={() => setPlaylistsModalOpen(true)}
                             />}
-                        >Playlists</Tooltip>
+                        >Playlists</Tooltip>}
 
-                        <PlayRandomEpisodeButton />
+                        {!(isStreamingOnly || isNakamaLibrary) && <PlayRandomEpisodeButton />}
 
-                        <Button
+                        {!(isStreamingOnly || isNakamaLibrary) && hasLibraryPath && <Button
                             data-library-toolbar-scan-button
                             intent={hasEntries ? "primary-subtle" : "primary"}
                             leftIcon={hasEntries ? <TbReload className="text-xl" /> : <FiSearch className="text-xl" />}
@@ -102,7 +108,7 @@ export function LibraryToolbar(props: LibraryToolbarProps) {
                             hideTextOnSmallScreen
                         >
                             {hasEntries ? "Refresh library" : "Scan your library"}
-                        </Button>
+                        </Button>}
                     </>
                 )}
                 {(unmatchedLocalFiles.length > 0) && <Button
@@ -123,7 +129,8 @@ export function LibraryToolbar(props: LibraryToolbarProps) {
                 >
                     Resolve hidden media ({unknownGroups.length})
                 </Button>}
-                {!!status?.settings?.library?.libraryPath &&
+
+                {(!isStreamingOnly && !isNakamaLibrary && hasLibraryPath) &&
                     <DropdownMenu
                         trigger={<IconButton
                             data-library-toolbar-dropdown-menu-trigger
@@ -133,8 +140,8 @@ export function LibraryToolbar(props: LibraryToolbarProps) {
 
                         <DropdownMenuItem
                             data-library-toolbar-open-directory-button
-                            disabled={!status?.settings?.library?.libraryPath}
-                            className={cn("cursor-pointer", { "!text-[--muted]": !status?.settings?.library?.libraryPath })}
+                            disabled={!hasLibraryPath}
+                            className={cn("cursor-pointer", { "!text-[--muted]": !hasLibraryPath })}
                             onClick={() => {
                                 openInExplorer({ path: status?.settings?.library?.libraryPath ?? "" })
                             }}

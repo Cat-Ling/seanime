@@ -46,7 +46,22 @@ func (r *Repository) HydrateStreamCollection(opts *HydrateStreamCollectionOption
 			continue
 		}
 		if *list.Status == anilist.MediaListStatusCurrent {
-			currentlyWatching = list
+			currentlyWatching = list.CopyT()
+			continue
+		}
+	}
+	for _, list := range lists {
+		if list.Status == nil {
+			continue
+		}
+		if *list.Status == anilist.MediaListStatusRepeating {
+			if currentlyWatching == nil {
+				currentlyWatching = list
+			} else {
+				for _, entry := range list.Entries {
+					currentlyWatching.Entries = append(currentlyWatching.Entries, entry)
+				}
+			}
 			break
 		}
 	}
